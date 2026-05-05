@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+/vendor/
+/storage/cache/*
+/storage/logs/*
+!/storage/cache/.gitkeep
+!/storage/logs/.gitkeep
+/.idea/
+/.vscode/
+*.log
+*.sql.gz
+*.zip
+*.tar
+*.tgz

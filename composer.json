@@ -1,0 +1,23 @@
+{
+  "name": "musaabhasan/pdrs-framework",
+  "description": "Professional Development Registration System framework for secure event registration and Moodle enrollment automation.",
+  "type": "project",
+  "license": "MIT",
+  "require": {
+    "php": "^8.2",
+    "ext-curl": "*",
+    "ext-json": "*",
+    "ext-openssl": "*",
+    "ext-pdo": "*",
+    "ext-pdo_mysql": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Pdrs\\": "src/"
+    }
+  },
+  "scripts": {
+    "lint": "php -d display_errors=1 bin/lint.php",
+    "self-test": "php -d display_errors=1 bin/self-test.php"
+  }
+}

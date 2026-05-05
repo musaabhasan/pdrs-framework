@@ -1,0 +1,17 @@
+name: Quality
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  php-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: curl, json, openssl, pdo, pdo_mysql
+      - run: php bin/lint.php
+      - run: php bin/self-test.php
