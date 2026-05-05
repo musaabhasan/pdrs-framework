@@ -10,14 +10,20 @@ It is designed for regulated education and government-adjacent environments wher
 - Event-specific metadata fields mapped to Moodle custom profile fields.
 - Mandatory email verification before registration records are created.
 - OTP and signed-link verification workflows.
+- Session-backed CSRF protection across public form submissions.
 - Duplicate identity checks against Moodle before account creation.
+- Duplicate registration handling by event and verified email.
 - Moodle REST integration for user creation, cohort assignment, and course enrollment.
+- Retryable Moodle provisioning utility for operational recovery.
 - Automatic approval based on domain allow-lists and payment status flags.
 - AES-256-GCM encryption for sensitive registration data at rest.
 - HMAC hashing for email, IP address, and user-agent lookups without exposing raw values.
 - PDO prepared statements for all database operations.
 - Rate limiting for verification endpoints.
 - Audit logging for registration attempts, verification events, administrative changes, and integration failures.
+- Liveness, readiness, and protected operations metrics endpoints.
+- Maintenance commands for expired verification, rate-limit, and audit-log cleanup.
+- SMTP transactional email transport with local mail logging for development.
 - Dockerized local development with PHP 8.3, Apache, MySQL 8.0, and Mailpit.
 
 ## Architecture
@@ -57,6 +63,28 @@ If PHP is not installed locally, run that command inside a PHP container or repl
 
 The example key in `.env.example` is only for local development and must be replaced before production use.
 
+## Operational Commands
+
+Run scheduled maintenance:
+
+```bash
+php bin/maintenance.php
+```
+
+Retry approved or failed Moodle provisioning records:
+
+```bash
+php bin/retry-provisioning.php
+```
+
+Generate an operations bearer token hash:
+
+```bash
+php -r "echo hash('sha256', 'replace-with-strong-token') . PHP_EOL;"
+```
+
+Set the result as `OPERATIONS_TOKEN_HASH` and call `/ops/metrics` with `Authorization: Bearer <token>`.
+
 ## Documentation
 
 - [Architecture](docs/architecture.md)
@@ -66,6 +94,8 @@ The example key in `.env.example` is only for local development and must be repl
 - [Development Guide](docs/development.md)
 - [Operations Guide](docs/operations.md)
 - [API and Routes](docs/api.md)
+- [Extension Guide](docs/extension-guide.md)
+- [Production Checklist](docs/production-checklist.md)
 - [Future Roadmap](docs/roadmap.md)
 
 ## Repository Structure

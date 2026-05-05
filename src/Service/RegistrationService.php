@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Pdrs\Service;
 
-use Throwable;
 use Pdrs\Repository\RegistrationRepository;
-use Pdrs\Support\Env;
 use Pdrs\Support\Json;
 use Pdrs\Support\Uuid;
 
@@ -16,8 +14,7 @@ final class RegistrationService
         private readonly RegistrationRepository $registrations,
         private readonly CryptoService $crypto,
         private readonly ApprovalService $approval,
-        private readonly FieldMapper $mapper,
-        private readonly MoodleClient $moodle,
+        private readonly ProvisioningService $provisioning,
         private readonly NotificationService $notifications,
     ) {
     }
@@ -25,6 +22,26 @@ final class RegistrationService
     public function register(array $event, array $verification, array $payload): array
     {
         $email = strtolower(trim($verification['email']));
+        $emailHash = $this->crypto->hash($email);
+        $existingRegistration = $this->registrations->findByEventAndEmailHash((int) $event['id'], $emailHash);
+
+        if ($existingRegistration) {
+            $this->notifications->sendConfirmation(
+                $email,
+                $event,
+                "/calendar/{$existingRegistration['uuid']}.ics",
+                (string) $existingRegistration['approval_status'],
+                'existing_registration'
+            );
+
+            return [
+                'id' => (int) $existingRegistration['id'],
+                'uuid' => (string) $existingRegistration['uuid'],
+                'status' => (string) $existingRegistration['approval_status'],
+                'reason' => 'existing_registration',
+            ];
+        }
+
         $decision = $this->approval->evaluate($event, $email, (bool) ($payload['payment_confirmed'] ?? false));
         $metadata = $this->metadata($event, $payload);
         $uuid = Uuid::v4();
@@ -33,7 +50,7 @@ final class RegistrationService
             'uuid' => $uuid,
             'event_id' => $event['id'],
             'verification_id' => $verification['id'],
-            'email_hash' => $this->crypto->hash($email),
+            'email_hash' => $emailHash,
             'email_encrypted' => $this->crypto->encrypt($email),
             'first_name_encrypted' => $this->crypto->encrypt((string) $payload['first_name']),
             'last_name_encrypted' => $this->crypto->encrypt((string) $payload['last_name']),
@@ -44,7 +61,7 @@ final class RegistrationService
         ]);
 
         if ($decision['status'] === 'approved') {
-            $this->provision($id, $event, [
+            $this->provisioning->provision($id, $event, [
                 'email' => $email,
                 'first_name' => (string) $payload['first_name'],
                 'last_name' => (string) $payload['last_name'],
@@ -53,30 +70,9 @@ final class RegistrationService
             ]);
         }
 
-        $this->notifications->sendConfirmation($email, $event, "/calendar/{$uuid}.ics");
+        $this->notifications->sendConfirmation($email, $event, "/calendar/{$uuid}.ics", $decision['status'], $decision['reason']);
 
         return ['id' => $id, 'uuid' => $uuid, 'status' => $decision['status'], 'reason' => $decision['reason']];
-    }
-
-    private function provision(int $registrationId, array $event, array $registration): void
-    {
-        try {
-            [$user, $temporaryPassword] = $this->mapper->moodleUser($event, $registration);
-            $existing = $this->moodle->findUserByEmailOrUsername($registration['email'], $user['username']);
-            $moodleUserId = $existing ? (int) $existing['id'] : $this->moodle->createUser($user);
-
-            $courseIds = array_map('intval', $event['moodle_course_ids'] ?? []);
-            $cohortIds = array_map('intval', $event['moodle_cohort_ids'] ?? []);
-            $this->moodle->enrolUser($moodleUserId, $courseIds, Env::int('MOODLE_STUDENT_ROLE_ID', 5));
-            $this->moodle->addToCohorts($moodleUserId, $cohortIds);
-            $this->registrations->markProvisioned($registrationId, $moodleUserId);
-
-            if (!$existing) {
-                $this->notifications->sendCredentialsNotice($registration['email'], $event);
-            }
-        } catch (Throwable $exception) {
-            $this->registrations->markFailed($registrationId, $exception->getMessage());
-        }
     }
 
     private function metadata(array $event, array $payload): array

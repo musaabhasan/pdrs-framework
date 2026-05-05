@@ -35,7 +35,9 @@ Production traffic should enforce:
 
 ## Session and Cookie Security
 
-The framework is currently stateless for public registration flows. When an administrative backend is added, enforce:
+Public registration flows use secure session configuration and CSRF tokens for all POST requests. Session cookies are HTTP-only, SameSite=Lax, and can be forced to HTTPS through `SECURITY_FORCE_HTTPS=true`.
+
+When an administrative backend is added, enforce:
 
 - Secure cookies.
 - HTTP-only cookies.
@@ -45,11 +47,11 @@ The framework is currently stateless for public registration flows. When an admi
 
 ## Input Validation
 
-The repository layer uses PDO prepared statements for all SQL queries. Public routes validate required fields, email syntax, and verification signatures.
+The repository layer uses PDO prepared statements for all SQL queries. Public routes validate required fields, email syntax, verification signatures, custom required fields, field length limits, and CSRF tokens.
 
 ## Rate Limiting
 
-Verification endpoints are throttled by hashed IP address and email identifier. Configure:
+Verification, OTP, and registration submission endpoints are throttled by hashed IP address and email identifier. Configure:
 
 ```text
 RATE_LIMIT_WINDOW_SECONDS=900
@@ -79,6 +81,10 @@ PDRS records:
 
 Audit logs should be retained for 12 months unless a stricter institutional policy applies.
 
+## Operations Endpoint Protection
+
+`/ops/metrics` is disabled unless `OPERATIONS_TOKEN_HASH` is configured. Store only the SHA-256 hash of a strong bearer token in the environment. Keep the raw token in a secret manager and restrict endpoint exposure through network controls.
+
 ## Production Hardening Checklist
 
 - Store `APP_KEY`, database credentials, SMTP credentials, and Moodle token in a secret manager.
@@ -90,3 +96,5 @@ Audit logs should be retained for 12 months unless a stricter institutional poli
 - Enforce encrypted database backups.
 - Test restore procedures.
 - Define data retention and disposal jobs.
+- Schedule `bin/maintenance.php`.
+- Schedule `bin/retry-provisioning.php` when Moodle availability is not guaranteed.

@@ -8,7 +8,7 @@ Framework landing page.
 
 ### `GET /health`
 
-Health endpoint.
+Liveness endpoint for load balancers and uptime monitors.
 
 Response:
 
@@ -18,6 +18,24 @@ Response:
   "service": "pdrs"
 }
 ```
+
+### `GET /readiness`
+
+Readiness endpoint for deployment and orchestration checks. It validates database access, writable storage paths, application key strength, and Moodle configuration presence.
+
+Healthy deployments return HTTP 200 with `status: ready`. Degraded deployments return HTTP 503 with `status: degraded`.
+
+### `GET /ops/metrics`
+
+Protected operational metrics endpoint. Requires:
+
+```text
+Authorization: Bearer <operations-token>
+```
+
+The token is checked against `OPERATIONS_TOKEN_HASH`, which must contain the SHA-256 hash of the bearer token.
+
+Response includes event counts, registration counts by status, open verification challenges, expired challenges, and recent audit volume.
 
 ### `GET /e/{slug}`
 
@@ -29,6 +47,7 @@ Starts email verification.
 
 Required form fields:
 
+- `_csrf_token`
 - `email`
 
 ### `POST /e/{slug}/otp`
@@ -37,6 +56,7 @@ Verifies a one-time code.
 
 Required form fields:
 
+- `_csrf_token`
 - `email`
 - `otp`
 
@@ -50,6 +70,7 @@ Creates the registration after verification.
 
 Required form fields:
 
+- `_csrf_token`
 - `verification_id`
 - `verification_signature`
 - `first_name`

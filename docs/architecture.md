@@ -34,6 +34,8 @@ Supported verification methods:
 - OTP code sent by email.
 - Signed verification link sent by email.
 
+Public POST routes use CSRF tokens and endpoint rate limits.
+
 ### Registration Layer
 
 After verification, the system collects standard user data and event-specific metadata:
@@ -69,6 +71,8 @@ The Moodle client calls Moodle REST web services to:
 - Enroll the user in one or more courses.
 - Add the user to one or more cohorts.
 
+Provisioning is handled by a dedicated service so failed enrollments can be retried from the command line without duplicating integration logic.
+
 ### Notification Layer
 
 Notification events include:
@@ -78,7 +82,17 @@ Notification events include:
 - Moodle credentials/access notice.
 - Calendar invite download through `.ics`.
 
-In local development, mail is written to `storage/logs/mail.log` and Mailpit is available through Docker.
+In local development, mail is written to `storage/logs/mail.log` and Mailpit is available through Docker. In production, notifications are sent through SMTP.
+
+### Operations Layer
+
+Operational endpoints and commands support production ownership:
+
+- `/health` for liveness.
+- `/readiness` for dependency readiness.
+- `/ops/metrics` for protected platform metrics.
+- `bin/maintenance.php` for cleanup and retention.
+- `bin/retry-provisioning.php` for Moodle recovery.
 
 ## Request Flow
 
@@ -87,12 +101,15 @@ GET /e/{slug}
   -> Render event page
 
 POST /e/{slug}/verify
+  -> Validate CSRF token
   -> Rate-limit request
   -> Validate email
   -> Issue OTP and signed link
   -> Log verification event
 
 POST /e/{slug}/otp
+  -> Validate CSRF token
+  -> Rate-limit request
   -> Validate OTP
   -> Render final registration form
 
@@ -101,6 +118,8 @@ GET /verify?token=...
   -> Render final registration form
 
 POST /e/{slug}/register
+  -> Validate CSRF token
+  -> Rate-limit request
   -> Validate verified challenge
   -> Create encrypted registration record
   -> Evaluate approval
@@ -113,7 +132,7 @@ POST /e/{slug}/register
 
 - Add payment providers by extending `ApprovalService`.
 - Add admin UI modules backed by the repository layer.
-- Add queue processing for Moodle provisioning and reminders.
+- Add queue processing for reminders or long-running integrations.
 - Add TOTP-based MFA for administrative accounts.
 - Add additional Moodle functions in `MoodleClient`.
 - Replace the simple view layer with Twig or another template engine.

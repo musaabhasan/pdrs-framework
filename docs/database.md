@@ -47,6 +47,8 @@ Important columns:
 - `moodle_user_id`
 - `provisioned_at`
 
+The unique event/email hash constraint prevents duplicate registrations for the same event while avoiding raw email storage in indexed columns.
+
 ### `audit_logs`
 
 Stores operational and security audit events.
@@ -68,3 +70,5 @@ Docker initializes the database from this folder during first startup.
 ## Retention
 
 Audit logs should be retained for 12 months unless institutional policy requires longer retention. Registration data retention should be defined by the program owner and data protection office.
+
+Run `php bin/maintenance.php` on a schedule to remove expired verification challenges, prune old rate-limit windows, and enforce audit retention.

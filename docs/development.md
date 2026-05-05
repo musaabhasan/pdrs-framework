@@ -35,6 +35,7 @@ Mailpit is also available for SMTP testing.
 - `src/Http`: request, response, routing.
 - `src/Repository`: database access through PDO.
 - `src/Service`: business logic, encryption, Moodle, email, approval.
+- `src/Middleware`: HTTP security, session, and operations access guards.
 - `public`: front controller and CSS.
 - `database`: MySQL schema and seed data.
 - `docs`: implementation guidance.
@@ -49,6 +50,27 @@ php bin/self-test.php
 ```
 
 The GitHub Actions workflow runs the same checks.
+
+## Local Operations Testing
+
+Generate a local operations token hash:
+
+```bash
+php -r "echo hash('sha256', 'local-operations-token') . PHP_EOL;"
+```
+
+Set `OPERATIONS_TOKEN_HASH` in `.env`, then call:
+
+```bash
+curl -H "Authorization: Bearer local-operations-token" http://localhost:8080/ops/metrics
+```
+
+Maintenance utilities can be run manually while developing:
+
+```bash
+php bin/maintenance.php
+php bin/retry-provisioning.php
+```
 
 ## Adding a New Event
 

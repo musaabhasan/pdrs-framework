@@ -31,7 +31,7 @@ body {
 .hero-card,
 .form-card {
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 8px;
   background: var(--panel);
   box-shadow: 0 20px 70px rgba(23, 32, 51, 0.08);
   padding: clamp(24px, 5vw, 46px);
@@ -70,10 +70,29 @@ dd {
   margin: 24px 0 0;
 }
 
-.event-meta div {
+.event-meta div,
+.capability-grid article {
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 14px;
+}
+
+.capability-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.capability-grid strong,
+.capability-grid span {
+  display: block;
+}
+
+.capability-grid span {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.95rem;
 }
 
 dt {
@@ -96,12 +115,19 @@ label {
   font-weight: 700;
 }
 
-input {
+input,
+select,
+textarea {
   min-height: 46px;
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 10px 12px;
   font: inherit;
+  background: #ffffff;
+}
+
+textarea {
+  resize: vertical;
 }
 
 button,
@@ -133,7 +159,8 @@ code {
 }
 
 @media (max-width: 680px) {
-  .event-meta {
+  .event-meta,
+  .capability-grid {
     grid-template-columns: 1fr;
   }
 

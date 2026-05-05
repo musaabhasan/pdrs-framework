@@ -41,6 +41,17 @@ final class RegistrationRepository
         $stmt->execute(['id' => $id, 'reason' => substr($reason, 0, 500)]);
     }
 
+    public function findByEventAndEmailHash(int $eventId, string $emailHash): ?array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT * FROM registrations WHERE event_id = :event_id AND email_hash = :email_hash LIMIT 1'
+        );
+        $stmt->execute(['event_id' => $eventId, 'email_hash' => $emailHash]);
+        $registration = $stmt->fetch();
+
+        return $registration ?: null;
+    }
+
     public function findByUuid(string $uuid): ?array
     {
         $stmt = $this->db->prepare(
@@ -53,5 +64,20 @@ final class RegistrationRepository
         $registration = $stmt->fetch();
 
         return $registration ?: null;
+    }
+
+    public function findProvisioningRetryCandidates(int $limit = 25): array
+    {
+        $limit = max(1, min($limit, 100));
+        $stmt = $this->db->prepare(
+            "SELECT *
+             FROM registrations
+             WHERE approval_status IN ('approved', 'failed') AND moodle_user_id IS NULL
+             ORDER BY updated_at ASC
+             LIMIT {$limit}"
+        );
+        $stmt->execute();
+
+        return $stmt->fetchAll();
     }
 }

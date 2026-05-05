@@ -95,4 +95,10 @@ PDRS calls `core_cohort_add_cohort_members` after user creation or lookup.
 
 ## Error Handling
 
-Moodle failures mark the registration as `failed` and store a bounded failure reason. Production deployments should move Moodle provisioning into a queue so temporary API failures can be retried safely.
+Moodle failures mark the registration as `failed` and store a bounded failure reason. The retry command reuses the same provisioning service as the live registration flow:
+
+```bash
+php bin/retry-provisioning.php
+```
+
+For high-volume production deployments, this command can later be replaced by a queue worker without changing the public registration flow.

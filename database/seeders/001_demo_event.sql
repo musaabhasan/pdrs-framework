@@ -23,9 +23,9 @@ INSERT INTO events (
   'Asia/Dubai',
   'Abu Dhabi, UAE',
   JSON_ARRAY(
-    JSON_OBJECT('name', 'organization', 'label', 'Organization', 'required', true, 'moodle_shortname', 'organization'),
-    JSON_OBJECT('name', 'job_title', 'label', 'Job title', 'required', true, 'moodle_shortname', 'jobtitle'),
-    JSON_OBJECT('name', 'registration_type', 'label', 'Registration type', 'required', true, 'moodle_shortname', 'registrationtype')
+    JSON_OBJECT('name', 'organization', 'label', 'Organization', 'type', 'text', 'required', true, 'moodle_shortname', 'organization'),
+    JSON_OBJECT('name', 'job_title', 'label', 'Job title', 'type', 'text', 'required', true, 'moodle_shortname', 'jobtitle'),
+    JSON_OBJECT('name', 'registration_type', 'label', 'Registration type', 'type', 'select', 'options', JSON_ARRAY('Faculty', 'School Leader', 'Government Partner', 'Other'), 'required', true, 'moodle_shortname', 'registrationtype')
   ),
   JSON_ARRAY('example.ac.ae', 'eca.ac.ae'),
   1,
