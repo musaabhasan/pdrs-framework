@@ -79,10 +79,12 @@ final class RegistrationService
     {
         $metadata = [];
         foreach ($event['custom_fields'] ?? [] as $field) {
-            if (!isset($field['name'])) {
+            $name = (string) ($field['name'] ?? '');
+            if (preg_match('/^[a-zA-Z][a-zA-Z0-9_]{0,63}$/', $name) !== 1) {
                 continue;
             }
-            $metadata[$field['name']] = (string) ($payload[$field['name']] ?? '');
+
+            $metadata[$name] = trim((string) ($payload[$name] ?? ''));
         }
 
         return $metadata;

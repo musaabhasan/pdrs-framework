@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Pdrs\Http;
 
+use Pdrs\Support\Env;
+
 final class Request
 {
     public function __construct(
@@ -35,7 +37,16 @@ final class Request
 
     public function ip(): string
     {
-        return (string) ($this->server['HTTP_X_FORWARDED_FOR'] ?? $this->server['REMOTE_ADDR'] ?? '0.0.0.0');
+        if (Env::bool('TRUST_PROXY_HEADERS', false) && isset($this->server['HTTP_X_FORWARDED_FOR'])) {
+            $forwarded = explode(',', (string) $this->server['HTTP_X_FORWARDED_FOR']);
+            $candidate = trim($forwarded[0] ?? '');
+
+            if (filter_var($candidate, FILTER_VALIDATE_IP)) {
+                return $candidate;
+            }
+        }
+
+        return (string) ($this->server['REMOTE_ADDR'] ?? '0.0.0.0');
     }
 
     public function userAgent(): string

@@ -13,7 +13,7 @@
 
 ## Infrastructure
 
-- Deploy application, database, backups, and logs to approved UAE-hosted infrastructure when required.
+- Deploy application, database, backups, and logs to approved institutional infrastructure.
 - Enforce TLS at the load balancer or reverse proxy.
 - Restrict outbound traffic to Moodle and SMTP endpoints.
 - Put `/ops/metrics` behind private network access where possible.

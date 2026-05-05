@@ -20,7 +20,7 @@ final class AppConfig
 
     public static function timezone(): string
     {
-        return (string) Env::get('APP_TIMEZONE', 'Asia/Dubai');
+        return (string) Env::get('APP_TIMEZONE', 'UTC');
     }
 
     public static function appKey(): string

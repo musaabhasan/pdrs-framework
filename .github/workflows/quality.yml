@@ -15,3 +15,4 @@ jobs:
           extensions: curl, json, openssl, pdo, pdo_mysql
       - run: php bin/lint.php
       - run: php bin/self-test.php
+      - run: php bin/test.php

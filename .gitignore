@@ -2,6 +2,7 @@
 .env.*
 !.env.example
 /vendor/
+/.tools/
 /storage/cache/*
 /storage/logs/*
 !/storage/cache/.gitkeep

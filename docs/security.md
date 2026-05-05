@@ -1,8 +1,8 @@
 # Security and Data Protection
 
-## Data Residency
+## Hosting and Data Governance
 
-Production deployments should host the application, MySQL database, object storage, backups, logs, and monitoring data in UAE-based infrastructure when required by organizational policy or data sovereignty obligations. Recommended deployment targets include approved UAE regions such as Azure UAE North.
+Production deployments should host the application, MySQL database, object storage, backups, logs, and monitoring data in infrastructure approved by the institution. Confirm hosting, retention, backup, and disposal requirements before go-live.
 
 ## Sensitive Data Handling
 
@@ -47,7 +47,11 @@ When an administrative backend is added, enforce:
 
 ## Input Validation
 
-The repository layer uses PDO prepared statements for all SQL queries. Public routes validate required fields, email syntax, verification signatures, custom required fields, field length limits, and CSRF tokens.
+The repository layer uses PDO prepared statements for all SQL queries. Public routes validate required fields, email syntax, verification signatures, custom required fields, custom field types, select options, field length limits, and CSRF tokens.
+
+## Client IP Handling
+
+By default, PDRS uses `REMOTE_ADDR`. Enable `TRUST_PROXY_HEADERS=true` only when the application is behind a trusted load balancer or reverse proxy that controls `X-Forwarded-For`.
 
 ## Rate Limiting
 

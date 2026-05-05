@@ -30,9 +30,17 @@ final class FieldMapper
                 continue;
             }
 
-            $name = $field['name'];
+            $name = (string) $field['name'];
+            $shortname = (string) $field['moodle_shortname'];
+            if (
+                preg_match('/^[a-zA-Z][a-zA-Z0-9_]{0,63}$/', $name) !== 1 ||
+                preg_match('/^[a-zA-Z][a-zA-Z0-9_]{0,63}$/', $shortname) !== 1
+            ) {
+                continue;
+            }
+
             $customFields[] = [
-                'type' => $field['moodle_shortname'],
+                'type' => $shortname,
                 'value' => (string) ($registration['metadata'][$name] ?? ''),
             ];
         }

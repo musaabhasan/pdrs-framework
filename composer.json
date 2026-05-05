@@ -19,6 +19,7 @@
   "scripts": {
     "lint": "php -d display_errors=1 bin/lint.php",
     "self-test": "php -d display_errors=1 bin/self-test.php",
+    "test": "php -d display_errors=1 bin/test.php",
     "maintenance": "php -d display_errors=1 bin/maintenance.php",
     "retry-provisioning": "php -d display_errors=1 bin/retry-provisioning.php"
   }

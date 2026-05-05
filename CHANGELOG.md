@@ -11,3 +11,6 @@
 - Added duplicate registration handling by event and verified email.
 - Improved registration notification wording for approved and pending workflows.
 - Added extension, production, contributing, and security documentation.
+- Removed geography-specific deployment references and normalized the demo configuration.
+- Added broader automated tests and a testing guide.
+- Refined the public UI for clearer hierarchy, responsive behavior, and stronger form ergonomics.

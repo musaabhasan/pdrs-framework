@@ -12,8 +12,12 @@ final class SecurityHeaders
     {
         header('X-Content-Type-Options: nosniff');
         header('X-Frame-Options: DENY');
+        header('X-Permitted-Cross-Domain-Policies: none');
         header('Referrer-Policy: strict-origin-when-cross-origin');
         header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
+        header('Cross-Origin-Opener-Policy: same-origin');
+        header('Cross-Origin-Resource-Policy: same-origin');
+        header('Cache-Control: no-store, max-age=0');
         header("Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; style-src 'self'; img-src 'self' data:; form-action 'self'; frame-ancestors 'none'");
 
         if (Env::bool('SECURITY_FORCE_HTTPS', false)) {

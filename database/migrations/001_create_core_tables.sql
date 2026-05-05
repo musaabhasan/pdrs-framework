@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS events (
   summary TEXT NULL,
   start_at DATETIME NOT NULL,
   end_at DATETIME NOT NULL,
-  timezone VARCHAR(80) NOT NULL DEFAULT 'Asia/Dubai',
+  timezone VARCHAR(80) NOT NULL DEFAULT 'UTC',
   location VARCHAR(255) NULL,
   custom_fields JSON NOT NULL,
   allowed_domains JSON NOT NULL,

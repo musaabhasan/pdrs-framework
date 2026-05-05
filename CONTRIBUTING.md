@@ -13,6 +13,7 @@
 ```bash
 php bin/lint.php
 php bin/self-test.php
+php bin/test.php
 ```
 
 ## Coding Standards

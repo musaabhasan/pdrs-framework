@@ -18,9 +18,16 @@ final class View
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{$safeTitle} | {$appName}</title>
-  <link rel="stylesheet" href="/assets/app.css">
+  <link rel="stylesheet" href="/assets/app.css?v=2">
 </head>
 <body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Professional Development Registration System home">
+      <span class="brand-mark">PD</span>
+      <span>Professional Development Registration</span>
+    </a>
+    <span class="topbar-badge">Secure enrollment</span>
+  </header>
   <main class="page-shell">
     {$body}
   </main>

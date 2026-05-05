@@ -51,9 +51,17 @@ final class ReadinessService
 
     private function writablePath(string $path): array
     {
-        return [
-            'ok' => is_dir($path) && is_writable($path),
-            'path' => basename($path),
-        ];
+        if (!is_dir($path)) {
+            return ['ok' => false, 'path' => basename($path)];
+        }
+
+        $probe = $path . DIRECTORY_SEPARATOR . '.readiness-' . bin2hex(random_bytes(6));
+        $written = @file_put_contents($probe, 'ok') === 2;
+
+        if ($written) {
+            @unlink($probe);
+        }
+
+        return ['ok' => $written, 'path' => basename($path)];
     }
 }

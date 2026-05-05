@@ -2,7 +2,7 @@
 
 PDRS is a PHP 8.x and MySQL 8.0 framework for secure professional development registration, identity verification, and Moodle enrollment automation.
 
-It is designed for regulated education and government-adjacent environments where registration workflows must balance user experience, security, auditability, data residency, and operational maintainability.
+It is designed for education and enterprise environments where registration workflows must balance user experience, security, auditability, privacy, and operational maintainability.
 
 ## What It Provides
 
@@ -24,6 +24,8 @@ It is designed for regulated education and government-adjacent environments wher
 - Liveness, readiness, and protected operations metrics endpoints.
 - Maintenance commands for expired verification, rate-limit, and audit-log cleanup.
 - SMTP transactional email transport with local mail logging for development.
+- Trusted proxy configuration for accurate client IP handling behind load balancers.
+- Rich field rendering and validation for text, email, number, date, textarea, and select inputs.
 - Dockerized local development with PHP 8.3, Apache, MySQL 8.0, and Mailpit.
 
 ## Architecture
@@ -89,6 +91,7 @@ Set the result as `OPERATIONS_TOKEN_HASH` and call `/ops/metrics` with `Authoriz
 
 - [Architecture](docs/architecture.md)
 - [Security and Data Protection](docs/security.md)
+- [Security Controls](docs/security-controls.md)
 - [Moodle Integration](docs/moodle-integration.md)
 - [Database Schema](docs/database.md)
 - [Development Guide](docs/development.md)
@@ -96,6 +99,7 @@ Set the result as `OPERATIONS_TOKEN_HASH` and call `/ops/metrics` with `Authoriz
 - [API and Routes](docs/api.md)
 - [Extension Guide](docs/extension-guide.md)
 - [Production Checklist](docs/production-checklist.md)
+- [Testing Guide](docs/testing.md)
 - [Future Roadmap](docs/roadmap.md)
 
 ## Repository Structure
@@ -114,7 +118,7 @@ bin/                    Utility scripts
 
 ## Production Notes
 
-For UAE data residency requirements, deploy the application and database to UAE-hosted infrastructure such as Azure UAE North or an approved local hosting environment. Enforce TLS 1.3 at the load balancer or reverse proxy layer, keep Moodle tokens in a secret manager, and restrict outbound access to approved Moodle endpoints and SMTP infrastructure.
+Deploy the application and database to approved infrastructure for the institution, enforce TLS at the load balancer or reverse proxy layer, keep Moodle tokens in a secret manager, and restrict outbound access to approved Moodle endpoints and SMTP infrastructure.
 
 ## License
 

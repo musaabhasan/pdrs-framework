@@ -18,7 +18,7 @@ foreach ($paths as $path) {
             continue;
         }
 
-        $command = sprintf('php -l %s', escapeshellarg($file->getPathname()));
+        $command = sprintf('%s -l %s', escapeshellarg(PHP_BINARY), escapeshellarg($file->getPathname()));
         passthru($command, $code);
 
         if ($code !== 0) {

@@ -20,8 +20,8 @@ INSERT INTO events (
   'A professional development program on secure AI adoption, governance evidence, risk decisions, and learning-sector implementation models.',
   '2026-06-10 09:00:00',
   '2026-06-10 15:00:00',
-  'Asia/Dubai',
-  'Abu Dhabi, UAE',
+  'UTC',
+  'Online / Hybrid',
   JSON_ARRAY(
     JSON_OBJECT('name', 'organization', 'label', 'Organization', 'type', 'text', 'required', true, 'moodle_shortname', 'organization'),
     JSON_OBJECT('name', 'job_title', 'label', 'Job title', 'type', 'text', 'required', true, 'moodle_shortname', 'jobtitle'),

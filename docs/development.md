@@ -47,6 +47,7 @@ Inside a PHP-enabled environment:
 ```bash
 php bin/lint.php
 php bin/self-test.php
+php bin/test.php
 ```
 
 The GitHub Actions workflow runs the same checks.

@@ -11,10 +11,6 @@ WAF / Load Balancer
   -> Central log and monitoring platform
 ```
 
-## UAE Data Residency
-
-Deploy application, database, logs, backups, and monitoring data to approved UAE infrastructure when required. Azure UAE North is an example target, subject to organizational approval.
-
 ## Secrets
 
 Keep these in a secret manager:
@@ -23,6 +19,7 @@ Keep these in a secret manager:
 - database password
 - Moodle token
 - SMTP credentials
+- operations bearer token
 
 Never commit `.env` files.
 
@@ -35,6 +32,10 @@ Back up:
 - Audit logs, if exported to external storage.
 
 Backups must be encrypted and tested through periodic restore drills.
+
+## Network Placement
+
+Deploy the application and database to approved institutional infrastructure. Keep the database private, restrict outbound traffic to Moodle and SMTP endpoints, and place operations endpoints behind trusted network controls where possible.
 
 ## Monitoring
 

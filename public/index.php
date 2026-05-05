@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+if (PHP_SAPI === 'cli-server') {
+    $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+    $file = realpath(__DIR__ . $path);
+
+    if ($file !== false && str_starts_with($file, __DIR__) && is_file($file)) {
+        return false;
+    }
+}
+
 use Pdrs\Config\AppConfig;
 use Pdrs\Http\Request;
 use Pdrs\Http\Response;
@@ -19,6 +28,7 @@ use Pdrs\Service\ApprovalService;
 use Pdrs\Service\AuditLogger;
 use Pdrs\Service\CryptoService;
 use Pdrs\Service\CsrfService;
+use Pdrs\Service\EventFormService;
 use Pdrs\Service\FieldMapper;
 use Pdrs\Service\IcsService;
 use Pdrs\Service\MoodleClient;
@@ -29,7 +39,6 @@ use Pdrs\Service\ReadinessService;
 use Pdrs\Service\RegistrationService;
 use Pdrs\Service\VerificationService;
 use Pdrs\Support\Database;
-use Pdrs\Support\Validator;
 use Pdrs\Support\View;
 
 require __DIR__ . '/../src/bootstrap.php';
@@ -43,6 +52,7 @@ $events = new EventRepository($db);
 $registrationRepository = new RegistrationRepository($db);
 $notificationService = new NotificationService();
 $csrf = new CsrfService();
+$forms = new EventFormService();
 $verifications = new VerificationService(
     new VerificationRepository($db),
     $crypto,
@@ -87,29 +97,43 @@ $router->get('/ops/metrics', function (Request $request) use ($db): Response {
 
 $router->get('/', function (): Response {
     $body = <<<HTML
-<section class="hero-card">
-  <p class="eyebrow">Professional Development Registration System</p>
-  <h1>Secure registration and learning platform enrollment for institutional programs.</h1>
-  <p>A controlled registration foundation for professional development events, identity verification, approval workflows, and Moodle provisioning.</p>
-  <div class="capability-grid">
-    <article><strong>Email verification</strong><span>OTP and signed-link confirmation before records are created.</span></article>
-    <article><strong>Approval rules</strong><span>Domain allow-lists, payment checks, and event-specific policies.</span></article>
-    <article><strong>Moodle automation</strong><span>User creation, course enrollment, and cohort assignment.</span></article>
-    <article><strong>Operational control</strong><span>Audit logs, rate limits, readiness checks, and retry utilities.</span></article>
+<section class="hero-panel">
+  <div>
+    <p class="eyebrow">Professional Development Registration System</p>
+    <h1>Secure registration and learning platform enrollment for institutional programs.</h1>
+    <p>A controlled registration foundation for professional development events, identity verification, approval workflows, and Moodle provisioning.</p>
+    <a class="button-link" href="/e/secure-ai-governance">Open demo event</a>
   </div>
+  <div class="status-panel" aria-label="Platform capabilities">
+    <span>Verified identity first</span>
+    <span>Encrypted registration data</span>
+    <span>Approval and provisioning controls</span>
+  </div>
+</section>
+<section class="capability-grid">
+  <article><strong>Email verification</strong><span>OTP and signed-link confirmation before records are created.</span></article>
+  <article><strong>Approval rules</strong><span>Domain allow-lists, payment checks, and event-specific policies.</span></article>
+  <article><strong>Moodle automation</strong><span>User creation, course enrollment, and cohort assignment.</span></article>
+  <article><strong>Operational control</strong><span>Audit logs, rate limits, readiness checks, and retry utilities.</span></article>
+</section>
+<section class="process-strip" aria-label="Registration process">
+  <div><span>1</span>Verify email</div>
+  <div><span>2</span>Complete registration</div>
+  <div><span>3</span>Apply approval policy</div>
+  <div><span>4</span>Provision learning access</div>
 </section>
 HTML;
 
     return new Response(View::render('Professional Development Registration System', $body));
 });
 
-$router->get('/e/{slug}', function (Request $request, array $params) use ($events, $csrf): Response {
+$router->get('/e/{slug}', function (Request $request, array $params) use ($events, $csrf, $forms): Response {
     $event = $events->findActiveBySlug($params['slug']);
     if (!$event) {
         return Response::json(['message' => 'Event not found'], 404);
     }
 
-    return new Response(View::render($event['title'], renderEventPage($event, $csrf)));
+    return new Response(View::render($event['title'], renderEventPage($event, $csrf, $forms)));
 });
 
 $router->post('/e/{slug}/verify', function (Request $request, array $params) use ($events, $rateLimiter, $verifications, $audit, $csrf): Response {
@@ -123,7 +147,7 @@ $router->post('/e/{slug}/verify', function (Request $request, array $params) use
     }
 
     $email = strtolower(trim((string) $request->input('email')));
-    if (!Validator::email($email)) {
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         return Response::json(['message' => 'A valid email address is required.'], 422);
     }
 
@@ -138,7 +162,7 @@ $router->post('/e/{slug}/verify', function (Request $request, array $params) use
     return new Response(View::render('Verification sent', renderOtpForm($event, $email, $csrf)));
 });
 
-$router->post('/e/{slug}/otp', function (Request $request, array $params) use ($events, $verifications, $audit, $rateLimiter, $csrf): Response {
+$router->post('/e/{slug}/otp', function (Request $request, array $params) use ($events, $verifications, $audit, $rateLimiter, $csrf, $forms): Response {
     $event = $events->findActiveBySlug($params['slug']);
     if (!$event) {
         return Response::json(['message' => 'Event not found'], 404);
@@ -163,10 +187,11 @@ $router->post('/e/{slug}/otp', function (Request $request, array $params) use ($
     }
 
     $audit->record('verification.completed', $request, ['entity_type' => 'verification', 'entity_id' => $challenge['id']]);
-    return new Response(View::render('Complete registration', renderRegistrationForm($event, $challenge, $csrf)));
+
+    return new Response(View::render('Complete registration', renderRegistrationForm($event, $challenge, $csrf, $forms)));
 });
 
-$router->get('/verify', function (Request $request) use ($events, $verifications, $audit, $csrf): Response {
+$router->get('/verify', function (Request $request) use ($events, $verifications, $audit, $csrf, $forms): Response {
     $token = (string) $request->input('token');
     $challenge = $verifications->verifyToken($token);
 
@@ -180,10 +205,11 @@ $router->get('/verify', function (Request $request) use ($events, $verifications
     }
 
     $audit->record('verification.completed', $request, ['entity_type' => 'verification', 'entity_id' => $challenge['id']]);
-    return new Response(View::render('Complete registration', renderRegistrationForm($event, $challenge, $csrf)));
+
+    return new Response(View::render('Complete registration', renderRegistrationForm($event, $challenge, $csrf, $forms)));
 });
 
-$router->post('/e/{slug}/register', function (Request $request, array $params) use ($events, $verifications, $registrations, $audit, $rateLimiter, $csrf): Response {
+$router->post('/e/{slug}/register', function (Request $request, array $params) use ($events, $verifications, $registrations, $audit, $rateLimiter, $csrf, $forms): Response {
     $event = $events->findActiveBySlug($params['slug']);
     if (!$event) {
         return Response::json(['message' => 'Event not found'], 404);
@@ -193,7 +219,7 @@ $router->post('/e/{slug}/register', function (Request $request, array $params) u
         return Response::json(['message' => 'The registration session has expired. Please refresh and try again.'], 419);
     }
 
-    $errors = registrationErrors($event, $request->post);
+    $errors = $forms->registrationErrors($event, $request->post);
     if ($errors !== []) {
         return Response::json(['message' => 'Validation failed', 'errors' => $errors], 422);
     }
@@ -256,35 +282,40 @@ $router->get('/calendar/{uuid}.ics', function (Request $request, array $params) 
 
 $router->dispatch(Request::capture())->send();
 
-function renderEventPage(array $event, CsrfService $csrf): string
+function renderEventPage(array $event, CsrfService $csrf, EventFormService $forms): string
 {
-    $fields = renderCustomFields($event, false);
     $summary = View::e($event['summary']);
     $title = View::e($event['title']);
     $slug = View::e($event['slug']);
     $startAt = View::e($event['start_at']);
-    $location = View::e($event['location']);
+    $endAt = View::e($event['end_at']);
+    $location = View::e($event['location'] ?: 'Online');
     $csrfField = $csrf->field();
 
     return <<<HTML
-<section class="hero-card">
-  <p class="eyebrow">Professional Development Registration</p>
-  <h1>{$title}</h1>
-  <p>{$summary}</p>
-  <dl class="event-meta">
-    <div><dt>Date</dt><dd>{$startAt}</dd></div>
-    <div><dt>Location</dt><dd>{$location}</dd></div>
-  </dl>
-</section>
-<section class="form-card">
-  <h2>Start registration</h2>
-  <p>Verify your email before submitting personal information. This protects identity quality and prevents duplicate records.</p>
-  <form method="post" action="/e/{$slug}/verify">
-    {$csrfField}
-    <label>Email address <input required type="email" name="email" autocomplete="email"></label>
-    {$fields}
-    <button type="submit">Send verification</button>
-  </form>
+<section class="event-layout">
+  <article class="program-panel">
+    <p class="eyebrow">Professional Development Registration</p>
+    <h1>{$title}</h1>
+    <p>{$summary}</p>
+    <dl class="event-meta">
+      <div><dt>Starts</dt><dd>{$startAt}</dd></div>
+      <div><dt>Ends</dt><dd>{$endAt}</dd></div>
+      <div><dt>Location</dt><dd>{$location}</dd></div>
+      <div><dt>Access</dt><dd>Email verification required</dd></div>
+    </dl>
+  </article>
+  <aside class="form-panel">
+    <div class="step-label">Step 1 of 3</div>
+    <h2>Start registration</h2>
+    <p>Verify your email before submitting personal information.</p>
+    <form method="post" action="/e/{$slug}/verify">
+      {$csrfField}
+      <label>Email address <input required type="email" name="email" autocomplete="email"></label>
+      {$forms->renderCustomFields($event, false)}
+      <button type="submit">Send verification</button>
+    </form>
+  </aside>
 </section>
 HTML;
 }
@@ -296,37 +327,41 @@ function renderOtpForm(array $event, string $email, CsrfService $csrf): string
     $csrfField = $csrf->field();
 
     return <<<HTML
-<section class="form-card">
+<section class="form-panel centered-panel">
+  <div class="step-label">Step 2 of 3</div>
   <h1>Check your email</h1>
-  <p>A one-time code and signed verification link have been sent to {$email}.</p>
+  <p>A one-time code and secure verification link have been sent to {$email}.</p>
   <form method="post" action="/e/{$slug}/otp">
     {$csrfField}
     <input type="hidden" name="email" value="{$email}">
-    <label>One-time code <input required inputmode="numeric" name="otp" pattern="[0-9]{6}" maxlength="6"></label>
+    <label>One-time code <input required inputmode="numeric" name="otp" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code"></label>
     <button type="submit">Verify and continue</button>
   </form>
 </section>
 HTML;
 }
 
-function renderRegistrationForm(array $event, array $challenge, CsrfService $csrf): string
+function renderRegistrationForm(array $event, array $challenge, CsrfService $csrf, EventFormService $forms): string
 {
     $slug = View::e($event['slug']);
-    $fields = renderCustomFields($event, true);
+    $fields = $forms->renderCustomFields($event, true);
     $verificationId = View::e((string) $challenge['id']);
     $verificationSignature = View::e($challenge['signature']);
     $csrfField = $csrf->field();
 
     return <<<HTML
-<section class="form-card">
+<section class="form-panel centered-panel">
+  <div class="step-label">Step 3 of 3</div>
   <h1>Complete registration</h1>
-  <p>Your email is verified. Complete the remaining registration details for Moodle provisioning.</p>
+  <p>Your email is verified. Complete the remaining details for approval and learning platform access.</p>
   <form method="post" action="/e/{$slug}/register">
     {$csrfField}
     <input type="hidden" name="verification_id" value="{$verificationId}">
     <input type="hidden" name="verification_signature" value="{$verificationSignature}">
-    <label>First name <input required name="first_name" autocomplete="given-name"></label>
-    <label>Last name <input required name="last_name" autocomplete="family-name"></label>
+    <div class="form-grid">
+      <label>First name <input required name="first_name" autocomplete="given-name"></label>
+      <label>Last name <input required name="last_name" autocomplete="family-name"></label>
+    </div>
     <label>City <input name="city" autocomplete="address-level2"></label>
     {$fields}
     <button type="submit">Submit registration</button>
@@ -335,81 +370,30 @@ function renderRegistrationForm(array $event, array $challenge, CsrfService $csr
 HTML;
 }
 
-function registrationErrors(array $event, array $payload): array
-{
-    $errors = Validator::required($payload, ['verification_id', 'verification_signature', 'first_name', 'last_name']);
-
-    foreach (['first_name', 'last_name', 'city'] as $field) {
-        if (isset($payload[$field]) && strlen((string) $payload[$field]) > 120) {
-            $errors[$field] = 'Please keep this value under 120 characters.';
-        }
-    }
-
-    foreach ($event['custom_fields'] ?? [] as $field) {
-        $name = (string) ($field['name'] ?? '');
-        if ($name === '') {
-            continue;
-        }
-
-        if (!empty($field['required']) && trim((string) ($payload[$name] ?? '')) === '') {
-            $errors[$name] = 'This field is required.';
-        }
-
-        if (isset($payload[$name]) && strlen((string) $payload[$name]) > 500) {
-            $errors[$name] = 'Please keep this value under 500 characters.';
-        }
-    }
-
-    return $errors;
-}
-
 function renderThankYou(array $registration): string
 {
-    $status = View::e($registration['approval_status']);
+    $status = statusLabel((string) $registration['approval_status']);
     $event = View::e($registration['event_title']);
     $uuid = View::e($registration['uuid']);
 
     return <<<HTML
-<section class="hero-card">
-  <p class="eyebrow">Registration received</p>
-  <h1>Thank you for registering for {$event}.</h1>
-  <p>Status: {$status}. You will receive confirmation and learning platform instructions according to the event approval policy.</p>
-  <a class="button-link" href="/calendar/{$uuid}.ics">Download calendar invite</a>
+<section class="hero-panel">
+  <div>
+    <p class="eyebrow">Registration received</p>
+    <h1>Thank you for registering for {$event}.</h1>
+    <p>Status: {$status}. Program instructions and learning platform access will follow according to the event approval policy.</p>
+    <a class="button-link" href="/calendar/{$uuid}.ics">Download calendar invite</a>
+  </div>
 </section>
 HTML;
 }
 
-function renderCustomFields(array $event, bool $includeInputs): string
+function statusLabel(string $status): string
 {
-    if (!$includeInputs) {
-        return '';
-    }
-
-    $html = '';
-    foreach ($event['custom_fields'] ?? [] as $field) {
-        $name = View::e((string) ($field['name'] ?? ''));
-        $label = View::e((string) ($field['label'] ?? $field['name'] ?? 'Additional field'));
-        $required = !empty($field['required']) ? 'required' : '';
-        $type = (string) ($field['type'] ?? 'text');
-
-        if ($type === 'textarea') {
-            $html .= "<label>{$label} <textarea {$required} name=\"{$name}\" rows=\"4\"></textarea></label>";
-            continue;
-        }
-
-        if ($type === 'select' && is_array($field['options'] ?? null)) {
-            $options = '<option value="">Select an option</option>';
-            foreach ($field['options'] as $option) {
-                $value = View::e((string) $option);
-                $options .= "<option value=\"{$value}\">{$value}</option>";
-            }
-            $html .= "<label>{$label} <select {$required} name=\"{$name}\">{$options}</select></label>";
-            continue;
-        }
-
-        $inputType = in_array($type, ['text', 'email', 'tel', 'number', 'date'], true) ? $type : 'text';
-        $html .= "<label>{$label} <input {$required} type=\"{$inputType}\" name=\"{$name}\"></label>";
-    }
-
-    return $html;
+    return View::e(match ($status) {
+        'approved' => 'Approved',
+        'provisioned' => 'Provisioned',
+        'failed' => 'Requires follow-up',
+        default => 'Pending review',
+    });
 }
