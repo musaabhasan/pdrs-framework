@@ -10,6 +10,7 @@
 - Configure `OPERATIONS_TOKEN_HASH`.
 - Configure SMTP host, port, encryption, credentials, and approved sender identity.
 - Use a least-privilege Moodle web service token.
+- Generate invite-code hashes after the production `APP_KEY` is set.
 
 ## Infrastructure
 
@@ -38,6 +39,7 @@
 
 - Run lint and self-test checks.
 - Test registration through OTP and signed-link paths.
+- Test invite-code disabled and invite-code enabled event flows.
 - Test duplicate registration behavior.
 - Test Moodle user lookup, user creation, course enrollment, and cohort assignment.
 - Test the calendar invite download.

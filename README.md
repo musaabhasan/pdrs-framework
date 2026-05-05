@@ -7,7 +7,9 @@ It is designed for education and enterprise environments where registration work
 ## What It Provides
 
 - Dynamic event landing pages using event slugs such as `/e/secure-ai-governance`.
+- Flexible program delivery metadata for synchronous, asynchronous, self-paced, instructor-led, hybrid, cohort-based, and custom formats.
 - Event-specific metadata fields mapped to Moodle custom profile fields.
+- Optional invite-code gates per event, with only HMAC hashes stored in the database.
 - Mandatory email verification before registration records are created.
 - OTP and signed-link verification workflows.
 - Session-backed CSRF protection across public form submissions.
@@ -86,6 +88,14 @@ php -r "echo hash('sha256', 'replace-with-strong-token') . PHP_EOL;"
 ```
 
 Set the result as `OPERATIONS_TOKEN_HASH` and call `/ops/metrics` with `Authorization: Bearer <token>`.
+
+Generate an invite-code hash for an invite-only event:
+
+```bash
+php bin/hash-invite-code.php "program-invite-code"
+```
+
+Set the generated value in `events.invite_code_hash` after the production `APP_KEY` has been configured.
 
 ## Documentation
 

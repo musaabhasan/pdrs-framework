@@ -31,8 +31,10 @@ use Pdrs\Service\CsrfService;
 use Pdrs\Service\EventFormService;
 use Pdrs\Service\FieldMapper;
 use Pdrs\Service\IcsService;
+use Pdrs\Service\InviteCodeService;
 use Pdrs\Service\MoodleClient;
 use Pdrs\Service\NotificationService;
+use Pdrs\Service\ProgramModeService;
 use Pdrs\Service\ProvisioningService;
 use Pdrs\Service\RateLimiter;
 use Pdrs\Service\ReadinessService;
@@ -53,6 +55,8 @@ $registrationRepository = new RegistrationRepository($db);
 $notificationService = new NotificationService();
 $csrf = new CsrfService();
 $forms = new EventFormService();
+$inviteCodes = new InviteCodeService($crypto);
+$programModes = new ProgramModeService();
 $verifications = new VerificationService(
     new VerificationRepository($db),
     $crypto,
@@ -106,14 +110,15 @@ $router->get('/', function (): Response {
   </div>
   <div class="status-panel" aria-label="Platform capabilities">
     <span>Verified identity first</span>
+    <span>Flexible program delivery</span>
     <span>Encrypted registration data</span>
     <span>Approval and provisioning controls</span>
   </div>
 </section>
 <section class="capability-grid">
-  <article><strong>Email verification</strong><span>OTP and signed-link confirmation before records are created.</span></article>
-  <article><strong>Approval rules</strong><span>Domain allow-lists, payment checks, and event-specific policies.</span></article>
-  <article><strong>Moodle automation</strong><span>User creation, course enrollment, and cohort assignment.</span></article>
+  <article><strong>Program formats</strong><span>Synchronous, asynchronous, self-paced, instructor-led, hybrid, cohort-based, and custom delivery models.</span></article>
+  <article><strong>Access controls</strong><span>Optional invite-code gates, OTP confirmation, and signed-link verification before records are created.</span></article>
+  <article><strong>Approval and provisioning</strong><span>Domain allow-lists, payment checks, Moodle user creation, course enrollment, and cohort assignment.</span></article>
   <article><strong>Operational control</strong><span>Audit logs, rate limits, readiness checks, and retry utilities.</span></article>
 </section>
 <section class="process-strip" aria-label="Registration process">
@@ -127,16 +132,16 @@ HTML;
     return new Response(View::render('Professional Development Registration System', $body));
 });
 
-$router->get('/e/{slug}', function (Request $request, array $params) use ($events, $csrf, $forms): Response {
+$router->get('/e/{slug}', function (Request $request, array $params) use ($events, $csrf, $forms, $inviteCodes, $programModes): Response {
     $event = $events->findActiveBySlug($params['slug']);
     if (!$event) {
         return Response::json(['message' => 'Event not found'], 404);
     }
 
-    return new Response(View::render($event['title'], renderEventPage($event, $csrf, $forms)));
+    return new Response(View::render($event['title'], renderEventPage($event, $csrf, $forms, $inviteCodes, $programModes)));
 });
 
-$router->post('/e/{slug}/verify', function (Request $request, array $params) use ($events, $rateLimiter, $verifications, $audit, $csrf): Response {
+$router->post('/e/{slug}/verify', function (Request $request, array $params) use ($events, $rateLimiter, $verifications, $audit, $csrf, $inviteCodes): Response {
     $event = $events->findActiveBySlug($params['slug']);
     if (!$event) {
         return Response::json(['message' => 'Event not found'], 404);
@@ -154,6 +159,11 @@ $router->post('/e/{slug}/verify', function (Request $request, array $params) use
     if (!$rateLimiter->allow($request, 'email-verification', $email)) {
         $audit->record('verification.rate_limited', $request, ['entity_type' => 'event', 'entity_id' => $event['id']]);
         return Response::json(['message' => 'Too many verification attempts. Please try again later.'], 429);
+    }
+
+    if (!$inviteCodes->valid($event, (string) $request->input('invite_code'))) {
+        $audit->record('invite_code.failed', $request, ['entity_type' => 'event', 'entity_id' => $event['id']]);
+        return Response::json(['message' => 'A valid invite code is required for this program.'], 422);
     }
 
     $verifications->issue($event, $email, $request);
@@ -282,7 +292,13 @@ $router->get('/calendar/{uuid}.ics', function (Request $request, array $params) 
 
 $router->dispatch(Request::capture())->send();
 
-function renderEventPage(array $event, CsrfService $csrf, EventFormService $forms): string
+function renderEventPage(
+    array $event,
+    CsrfService $csrf,
+    EventFormService $forms,
+    InviteCodeService $inviteCodes,
+    ProgramModeService $programModes
+): string
 {
     $summary = View::e($event['summary']);
     $title = View::e($event['title']);
@@ -290,6 +306,15 @@ function renderEventPage(array $event, CsrfService $csrf, EventFormService $form
     $startAt = View::e($event['start_at']);
     $endAt = View::e($event['end_at']);
     $location = View::e($event['location'] ?: 'Online');
+    $delivery = View::e($programModes->summary($event));
+    $duration = View::e((string) ($event['duration_label'] ?: 'Program schedule'));
+    $accessWindow = View::e((string) ($event['access_window_label'] ?: 'Defined by the program team'));
+    $access = $inviteCodes->enabled($event)
+        ? 'Invite code and email verification required'
+        : 'Email verification required';
+    $access = View::e($access);
+    $modeBadges = renderProgramModeBadges($programModes->labels($event));
+    $inviteCodeField = renderInviteCodeField($event, $inviteCodes);
     $csrfField = $csrf->field();
 
     return <<<HTML
@@ -298,11 +323,15 @@ function renderEventPage(array $event, CsrfService $csrf, EventFormService $form
     <p class="eyebrow">Professional Development Registration</p>
     <h1>{$title}</h1>
     <p>{$summary}</p>
+    {$modeBadges}
     <dl class="event-meta">
       <div><dt>Starts</dt><dd>{$startAt}</dd></div>
       <div><dt>Ends</dt><dd>{$endAt}</dd></div>
       <div><dt>Location</dt><dd>{$location}</dd></div>
-      <div><dt>Access</dt><dd>Email verification required</dd></div>
+      <div><dt>Delivery</dt><dd>{$delivery}</dd></div>
+      <div><dt>Duration</dt><dd>{$duration}</dd></div>
+      <div><dt>Access window</dt><dd>{$accessWindow}</dd></div>
+      <div><dt>Access</dt><dd>{$access}</dd></div>
     </dl>
   </article>
   <aside class="form-panel">
@@ -312,11 +341,40 @@ function renderEventPage(array $event, CsrfService $csrf, EventFormService $form
     <form method="post" action="/e/{$slug}/verify">
       {$csrfField}
       <label>Email address <input required type="email" name="email" autocomplete="email"></label>
+      {$inviteCodeField}
       {$forms->renderCustomFields($event, false)}
       <button type="submit">Send verification</button>
     </form>
   </aside>
 </section>
+HTML;
+}
+
+function renderProgramModeBadges(array $labels): string
+{
+    if ($labels === []) {
+        return '';
+    }
+
+    $items = '';
+    foreach ($labels as $label) {
+        $items .= '<span>' . View::e((string) $label) . '</span>';
+    }
+
+    return '<div class="mode-list" aria-label="Program delivery modes">' . $items . '</div>';
+}
+
+function renderInviteCodeField(array $event, InviteCodeService $inviteCodes): string
+{
+    if (!$inviteCodes->enabled($event)) {
+        return '';
+    }
+
+    $hint = trim((string) ($event['invite_code_hint'] ?? ''));
+    $hintHtml = $hint === '' ? '' : '<span class="field-help">' . View::e($hint) . '</span>';
+
+    return <<<HTML
+<label>Invite code <input required type="text" name="invite_code" autocomplete="off" spellcheck="false">{$hintHtml}</label>
 HTML;
 }
 

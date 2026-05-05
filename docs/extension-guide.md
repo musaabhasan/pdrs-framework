@@ -30,6 +30,28 @@ Supported public form types are `text`, `email`, `tel`, `number`, `date`, `texta
 
 `RegistrationService` stores the submitted metadata in encrypted form. `FieldMapper` maps configured values to Moodle custom profile fields.
 
+## Adding Program Delivery Modes
+
+Set delivery modes in the event `program_modes` JSON:
+
+```json
+["synchronous", "asynchronous", "self_paced", "instructor_led", "hybrid"]
+```
+
+Supported built-in labels include synchronous, asynchronous, self-paced, instructor-led, facilitated, hybrid, blended, cohort-based, workshop, webinar, microlearning, mentored, assessment-based, and credentialed. Custom keys are also supported and are rendered as readable labels.
+
+Use `duration_label` and `access_window_label` for program-specific schedule language, such as `Six-week cohort` or `Open for 90 days after confirmation`.
+
+## Adding Invite-Only Access
+
+Enable invite-code access by setting `invite_code_enabled=1` and storing an HMAC hash in `invite_code_hash`. Generate the hash with the configured application key:
+
+```bash
+php bin/hash-invite-code.php "program-invite-code"
+```
+
+The public event page will display an invite-code field only when this option is enabled. The verification endpoint rejects invalid invite codes before issuing OTP or signed-link challenges.
+
 ## Adding Approval Rules
 
 Extend `ApprovalService` when approval criteria become more advanced, such as:

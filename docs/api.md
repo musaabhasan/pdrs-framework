@@ -50,6 +50,12 @@ Required form fields:
 - `_csrf_token`
 - `email`
 
+Additional form field required only when event invite-code access is enabled:
+
+- `invite_code`
+
+Invite-code validation happens before an OTP or signed-link challenge is issued.
+
 ### `POST /e/{slug}/otp`
 
 Verifies a one-time code.

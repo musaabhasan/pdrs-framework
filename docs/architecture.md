@@ -13,7 +13,7 @@ PDRS is structured around four priorities:
 
 ### Public Event Layer
 
-Each event has a slug, metadata, custom fields, Moodle course IDs, cohort IDs, approval rules, and publication status. The public route is:
+Each event has a slug, metadata, delivery modes, custom fields, optional invite-code policy, Moodle course IDs, cohort IDs, approval rules, and publication status. The public route is:
 
 ```text
 /e/{event-slug}
@@ -35,6 +35,8 @@ Supported verification methods:
 - Signed verification link sent by email.
 
 Public POST routes use CSRF tokens and endpoint rate limits.
+
+If invite-code access is enabled for the event, the invite code is validated before any verification challenge is issued. Only an HMAC hash of the invite code is stored.
 
 ### Registration Layer
 
@@ -102,8 +104,9 @@ GET /e/{slug}
 
 POST /e/{slug}/verify
   -> Validate CSRF token
-  -> Rate-limit request
   -> Validate email
+  -> Rate-limit request
+  -> Validate invite code when enabled
   -> Issue OTP and signed link
   -> Log verification event
 
@@ -131,6 +134,8 @@ POST /e/{slug}/register
 ## Extension Points
 
 - Add payment providers by extending `ApprovalService`.
+- Add additional program delivery modes through event `program_modes`.
+- Enable invite-only registrations by setting an event invite-code hash.
 - Add admin UI modules backed by the repository layer.
 - Add queue processing for reminders or long-running integrations.
 - Add TOTP-based MFA for administrative accounts.

@@ -5,6 +5,7 @@ This matrix summarizes the baseline controls built into PDRS and the deployment 
 | Area | Control | Implementation |
 | --- | --- | --- |
 | Identity verification | Email ownership before records | OTP and signed-link verification before registration creation |
+| Invite-only access | Event-level access gate | Optional invite-code policy with HMAC-hashed code storage |
 | CSRF | Synchronizer token pattern | Session-backed `_csrf_token` on all public POST flows |
 | Session security | Secure cookie posture | HTTP-only, SameSite=Lax, optional secure cookies |
 | Input validation | Positive validation | Required fields, email syntax, field length limits, select option validation, typed custom fields |
@@ -12,7 +13,7 @@ This matrix summarizes the baseline controls built into PDRS and the deployment 
 | Sensitive data | Encryption at rest | AES-256-GCM for email, names, city, and event metadata |
 | Searchable identifiers | Non-reversible lookup | HMAC-SHA-256 for email, IP address, and user-agent lookups |
 | Duplicate prevention | Event-level uniqueness | Unique event/email hash constraint and Moodle identity lookup |
-| Rate limiting | Abuse throttling | Verification, OTP, and registration submission throttles |
+| Rate limiting | Abuse throttling | Verification, invite-code, OTP, and registration submission throttles |
 | Security headers | Browser hardening | CSP, frame denial, MIME sniffing protection, referrer policy, permissions policy, cross-origin policies |
 | Transport | Encrypted traffic | TLS enforced at the load balancer or reverse proxy |
 | Moodle API | Least privilege | Dedicated Moodle token limited to lookup, user creation, enrollment, and cohort assignment |

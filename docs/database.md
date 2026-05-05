@@ -11,12 +11,20 @@ Stores professional development events, public slugs, custom fields, approval po
 Important columns:
 
 - `slug`
+- `program_modes`
+- `duration_label`
+- `access_window_label`
 - `custom_fields`
 - `allowed_domains`
+- `invite_code_enabled`
+- `invite_code_hash`
+- `invite_code_hint`
 - `moodle_course_ids`
 - `moodle_cohort_ids`
 - `instant_approval`
 - `requires_payment`
+
+`program_modes` stores delivery labels such as `synchronous`, `asynchronous`, `self_paced`, `instructor_led`, `hybrid`, `cohort_based`, or a custom mode key. `invite_code_hash` stores an HMAC-SHA-256 hash generated with the application key; the raw invite code should never be stored.
 
 ### `verification_challenges`
 

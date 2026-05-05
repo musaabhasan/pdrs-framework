@@ -13,6 +13,8 @@ use Pdrs\Service\CsrfService;
 use Pdrs\Service\EventFormService;
 use Pdrs\Service\FieldMapper;
 use Pdrs\Service\IcsService;
+use Pdrs\Service\InviteCodeService;
+use Pdrs\Service\ProgramModeService;
 
 require __DIR__ . '/../src/bootstrap.php';
 
@@ -57,6 +59,27 @@ test('CryptoService encrypts, decrypts, hashes, and signs consistently', functio
     assertTrue($crypto->decrypt($cipher) === 'person@example.edu', 'Ciphertext should decrypt to the original value.');
     assertTrue($crypto->hash('User@Example.edu') === $crypto->hash(' user@example.edu '), 'Hashes should normalize lookup values.');
     assertTrue(strlen($crypto->sign('payload')) === 64, 'HMAC signatures should be SHA-256 hex strings.');
+});
+
+test('ProgramModeService renders flexible delivery labels', function (): void {
+    $modes = new ProgramModeService();
+    $labels = $modes->labels([
+        'program_modes' => ['synchronous', 'asynchronous', 'self-paced', 'Instructor Led', 'custom_lab'],
+    ]);
+
+    assertTrue($labels === ['Synchronous', 'Asynchronous', 'Self-paced', 'Instructor-led', 'Custom Lab'], 'Program modes should normalize known and custom delivery labels.');
+    assertTrue($modes->summary(['program_modes' => []]) === 'Flexible delivery', 'Empty modes should render a useful fallback.');
+});
+
+test('InviteCodeService enforces optional invite gates', function (): void {
+    $crypto = new CryptoService(random_bytes(32));
+    $inviteCodes = new InviteCodeService($crypto);
+    $hash = $crypto->hash($inviteCodes->normalize('PD-2026'));
+
+    assertTrue($inviteCodes->valid(['invite_code_enabled' => 0], ''), 'Disabled invite gates should not block registration.');
+    assertTrue($inviteCodes->valid(['invite_code_enabled' => 1, 'invite_code_hash' => $hash], ' pd -2026 '), 'Invite codes should be normalized before comparison.');
+    assertTrue(!$inviteCodes->valid(['invite_code_enabled' => 1, 'invite_code_hash' => $hash], 'wrong'), 'Invalid invite codes should be rejected.');
+    assertTrue(!$inviteCodes->valid(['invite_code_enabled' => 1, 'invite_code_hash' => ''], 'PD-2026'), 'Enabled invite gates require a configured hash.');
 });
 
 test('EventFormService validates custom field types and options', function (): void {

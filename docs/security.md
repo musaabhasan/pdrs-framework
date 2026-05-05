@@ -21,8 +21,11 @@ Lookup fields use HMAC-SHA-256:
 - Email address
 - IP address
 - User agent
+- Invite code values
 
 This supports duplicate checks and rate limiting without exposing raw values in indexed columns.
+
+Invite-only events store only an HMAC hash of the configured code. The code is validated before an OTP or signed-link challenge is created, which prevents unnecessary data collection for unauthorized attempts.
 
 ## Transport Security
 
@@ -55,7 +58,7 @@ By default, PDRS uses `REMOTE_ADDR`. Enable `TRUST_PROXY_HEADERS=true` only when
 
 ## Rate Limiting
 
-Verification, OTP, and registration submission endpoints are throttled by hashed IP address and email identifier. Configure:
+Verification, invite-code, OTP, and registration submission endpoints are throttled by hashed IP address and email identifier. Configure:
 
 ```text
 RATE_LIMIT_WINDOW_SECONDS=900
@@ -78,6 +81,7 @@ Do not reuse administrator tokens.
 PDRS records:
 
 - Verification issuance.
+- Invite-code failures.
 - Verification failures and completions.
 - Registration creation.
 - Moodle provisioning failures.

@@ -33,7 +33,7 @@ final class EventRepository
 
     private function hydrate(array $event): array
     {
-        foreach (['custom_fields', 'allowed_domains', 'moodle_course_ids', 'moodle_cohort_ids'] as $field) {
+        foreach (['program_modes', 'custom_fields', 'allowed_domains', 'moodle_course_ids', 'moodle_cohort_ids'] as $field) {
             $event[$field] = Json::decode($event[$field] ?? '[]', []);
         }
 

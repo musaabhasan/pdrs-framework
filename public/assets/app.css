@@ -214,6 +214,23 @@ dd,
   margin: 28px 0 0;
 }
 
+.mode-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 22px;
+}
+
+.mode-list span {
+  border: 1px solid #f3d2aa;
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: #fff8ed;
+  color: var(--accent);
+  font-size: 0.86rem;
+  font-weight: 900;
+}
+
 .event-meta div {
   min-height: 86px;
   border: 1px solid var(--line);
@@ -246,6 +263,12 @@ label {
   gap: 6px;
   color: var(--text);
   font-weight: 800;
+}
+
+.field-help {
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 600;
 }
 
 input,
