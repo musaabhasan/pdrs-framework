@@ -1,4 +1,4 @@
-﻿# Professional Development Registration System Framework
+# Professional Development Registration System Framework
 
 PDRS is a PHP 8.x and MySQL 8.0 framework for secure professional development registration, identity verification, and Moodle enrollment automation.
 
