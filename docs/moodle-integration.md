@@ -34,8 +34,8 @@ User lookup is performed before account creation to prevent duplicates.
 Set the following environment variables:
 
 ```text
-MOODLE_BASE_URL=https://moodle.example.ac.ae
-MOODLE_TOKEN=replace-with-least-privilege-service-token
+MOODLE_BASE_URL=https://moodle.example.org
+MOODLE_TOKEN=replace-with-moodle-web-service-token
 MOODLE_REST_FORMAT=json
 MOODLE_STUDENT_ROLE_ID=5
 ```

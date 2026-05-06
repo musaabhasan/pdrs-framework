@@ -66,7 +66,7 @@ final class NotificationService
         $port = Env::int('SMTP_PORT', 587);
         $timeout = Env::int('SMTP_TIMEOUT_SECONDS', 15);
         $encryption = strtolower((string) Env::get('SMTP_ENCRYPTION', 'starttls'));
-        $fromAddress = (string) Env::get('SMTP_FROM_ADDRESS', 'registrations@example.ac.ae');
+        $fromAddress = (string) Env::get('SMTP_FROM_ADDRESS', 'registrations@example.org');
         $fromName = (string) Env::get('SMTP_FROM_NAME', 'Professional Development Office');
 
         if ($host === '') {
@@ -157,7 +157,7 @@ final class NotificationService
             'MIME-Version: 1.0',
             'Content-Type: text/plain; charset=UTF-8',
             'Date: ' . gmdate('D, d M Y H:i:s') . ' +0000',
-            'Message-ID: <' . bin2hex(random_bytes(16)) . '@pdrs.local>',
+            'Message-ID: <' . bin2hex(random_bytes(16)) . '@pdrs.example.org>',
         ];
 
         $normalizedBody = preg_replace("/\r\n|\r|\n/", "\r\n", $body) ?? $body;

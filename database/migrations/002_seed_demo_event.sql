@@ -36,7 +36,7 @@ INSERT INTO events (
     JSON_OBJECT('name', 'job_title', 'label', 'Job title', 'type', 'text', 'required', true, 'moodle_shortname', 'jobtitle'),
     JSON_OBJECT('name', 'registration_type', 'label', 'Registration type', 'type', 'select', 'options', JSON_ARRAY('Faculty', 'School Leader', 'Government Partner', 'Other'), 'required', true, 'moodle_shortname', 'registrationtype')
   ),
-  JSON_ARRAY('example.ac.ae', 'eca.ac.ae'),
+  JSON_ARRAY('example.org', 'training.example.org'),
   0,
   NULL,
   NULL,
