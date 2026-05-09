@@ -20,6 +20,7 @@ It is designed for education and enterprise environments where registration work
 - Automatic approval based on domain allow-lists and payment status flags.
 - AES-256-GCM encryption for sensitive registration data at rest.
 - HMAC hashing for email, IP address, and user-agent lookups without exposing raw values.
+- Data retention and privacy workflow for registration, verification, Moodle provisioning, attendance, certificate, support, and audit records.
 - PDO prepared statements for all database operations.
 - Rate limiting for verification endpoints.
 - Audit logging for registration attempts, verification events, administrative changes, and integration failures.
@@ -105,6 +106,7 @@ Set the generated value in `events.invite_code_hash` after the production `APP_K
 - [Secure Enrollment Threat Model](docs/secure-enrollment-threat-model.md)
 - [Moodle Integration](docs/moodle-integration.md)
 - [Moodle Integration Security Checklist](docs/moodle-integration-security-checklist.md)
+- [Data Retention and Privacy Workflow](docs/data-retention-privacy-workflow.md)
 - [Database Schema](docs/database.md)
 - [Development Guide](docs/development.md)
 - [Operations Guide](docs/operations.md)
