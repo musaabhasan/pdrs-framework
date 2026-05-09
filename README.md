@@ -19,6 +19,7 @@ It is designed for education and enterprise environments where registration work
 - Retryable Moodle provisioning utility for operational recovery.
 - Moodle enrollment reconciliation workflow for identity, course, cohort, role, withdrawal, retry, and certificate-release drift.
 - Certificate eligibility reconciliation workflow for registration, attendance, Moodle completion, payment, withdrawal, exceptions, and certificate release evidence.
+- Attendance anomaly triage workflow for missing attendance, duplicate check-ins, late joins, platform drift, manual overrides, disputes, and certificate eligibility impact.
 - Waitlist and capacity governance workflow for fair seat allocation, invite waves, reserved capacity, overbooking approvals, accessibility accommodations, and audit evidence.
 - Automatic approval based on domain allow-lists and payment status flags.
 - AES-256-GCM encryption for sensitive registration data at rest.
@@ -111,6 +112,7 @@ Set the generated value in `events.invite_code_hash` after the production `APP_K
 - [Moodle Integration Security Checklist](docs/moodle-integration-security-checklist.md)
 - [Moodle Enrollment Reconciliation Workflow](docs/moodle-enrollment-reconciliation-workflow.md)
 - [Certificate Eligibility Reconciliation Workflow](docs/certificate-eligibility-reconciliation-workflow.md)
+- [Attendance Anomaly Triage Workflow](docs/attendance-anomaly-triage-workflow.md)
 - [Waitlist and Capacity Governance Workflow](docs/waitlist-capacity-governance-workflow.md)
 - [Data Retention and Privacy Workflow](docs/data-retention-privacy-workflow.md)
 - [Database Schema](docs/database.md)
