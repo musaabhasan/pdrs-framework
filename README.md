@@ -104,6 +104,7 @@ Set the generated value in `events.invite_code_hash` after the production `APP_K
 - [Security Controls](docs/security-controls.md)
 - [Secure Enrollment Threat Model](docs/secure-enrollment-threat-model.md)
 - [Moodle Integration](docs/moodle-integration.md)
+- [Moodle Integration Security Checklist](docs/moodle-integration-security-checklist.md)
 - [Database Schema](docs/database.md)
 - [Development Guide](docs/development.md)
 - [Operations Guide](docs/operations.md)
