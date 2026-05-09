@@ -17,6 +17,7 @@ It is designed for education and enterprise environments where registration work
 - Duplicate registration handling by event and verified email.
 - Moodle REST integration for user creation, cohort assignment, and course enrollment.
 - Retryable Moodle provisioning utility for operational recovery.
+- Moodle enrollment reconciliation workflow for identity, course, cohort, role, withdrawal, retry, and certificate-release drift.
 - Automatic approval based on domain allow-lists and payment status flags.
 - AES-256-GCM encryption for sensitive registration data at rest.
 - HMAC hashing for email, IP address, and user-agent lookups without exposing raw values.
@@ -106,6 +107,7 @@ Set the generated value in `events.invite_code_hash` after the production `APP_K
 - [Secure Enrollment Threat Model](docs/secure-enrollment-threat-model.md)
 - [Moodle Integration](docs/moodle-integration.md)
 - [Moodle Integration Security Checklist](docs/moodle-integration-security-checklist.md)
+- [Moodle Enrollment Reconciliation Workflow](docs/moodle-enrollment-reconciliation-workflow.md)
 - [Data Retention and Privacy Workflow](docs/data-retention-privacy-workflow.md)
 - [Database Schema](docs/database.md)
 - [Development Guide](docs/development.md)
