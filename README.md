@@ -23,6 +23,7 @@ It is designed for education and enterprise environments where registration work
 - Certificate eligibility reconciliation workflow for registration, attendance, Moodle completion, payment, withdrawal, exceptions, and certificate release evidence.
 - Attendance anomaly triage workflow for missing attendance, duplicate check-ins, late joins, platform drift, manual overrides, disputes, and certificate eligibility impact.
 - Waitlist and capacity governance workflow for fair seat allocation, invite waves, reserved capacity, overbooking approvals, accessibility accommodations, and audit evidence.
+- Waitlist fairness and capacity release workflow for priority rules, sponsor allocation, invite expiry, overbooking decisions, accessibility holds, Moodle provisioning, and complaint-ready evidence.
 - Automatic approval based on domain allow-lists and payment status flags.
 - AES-256-GCM encryption for sensitive registration data at rest.
 - HMAC hashing for email, IP address, and user-agent lookups without exposing raw values.
@@ -118,6 +119,7 @@ Set the generated value in `events.invite_code_hash` after the production `APP_K
 - [Certificate Eligibility Reconciliation Workflow](docs/certificate-eligibility-reconciliation-workflow.md)
 - [Attendance Anomaly Triage Workflow](docs/attendance-anomaly-triage-workflow.md)
 - [Waitlist and Capacity Governance Workflow](docs/waitlist-capacity-governance-workflow.md)
+- [Waitlist Fairness and Capacity Release Workflow](docs/waitlist-fairness-capacity-release-workflow.md)
 - [Data Retention and Privacy Workflow](docs/data-retention-privacy-workflow.md)
 - [Database Schema](docs/database.md)
 - [Development Guide](docs/development.md)
