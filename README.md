@@ -13,6 +13,7 @@ It is designed for education and enterprise environments where registration work
 - Mandatory email verification before registration records are created.
 - OTP and signed-link verification workflows.
 - Identity proofing exception workflow for duplicate accounts, name variants, email changes, sponsor corrections, Moodle conflicts, suspicious registration patterns, and certificate-impacting identity updates.
+- Sponsor roster import validation workflow for employer or partner cohorts, covering sponsor authority, schema checks, eligibility, consent, duplicates, invite scope, and downstream reconciliation.
 - Session-backed CSRF protection across public form submissions.
 - Duplicate identity checks against Moodle before account creation.
 - Duplicate registration handling by event and verified email.
@@ -110,6 +111,7 @@ Set the generated value in `events.invite_code_hash` after the production `APP_K
 - [Security Controls](docs/security-controls.md)
 - [Secure Enrollment Threat Model](docs/secure-enrollment-threat-model.md)
 - [Identity Proofing Exception Workflow](docs/identity-proofing-exception-workflow.md)
+- [Sponsor Roster Import Validation Workflow](docs/sponsor-roster-import-validation-workflow.md)
 - [Moodle Integration](docs/moodle-integration.md)
 - [Moodle Integration Security Checklist](docs/moodle-integration-security-checklist.md)
 - [Moodle Enrollment Reconciliation Workflow](docs/moodle-enrollment-reconciliation-workflow.md)
